@@ -1,1113 +1,776 @@
-LS Pocket JavaScript SDK
-======================================================================
+# LS Pocket JavaScript SDK
 
-JavaScript SDK (browser and node) for interacting with the [PocketBase API](https://pocketbase.io/docs), forked and rebranded from the original PocketBase JS SDK.
+<p align="center">
+  <img src="https://raw.githubusercontent.com/girishlade111/LS-Pocket/main/ui/public/images/logo.svg" alt="LS Pocket Logo" width="120" height="120" onerror="this.style.display='none'" />
+</p>
 
-> **Attribution:** This package is a fork of the [pocketbase/js-sdk](https://github.com/pocketbase/js-sdk) by Gani Georgiev,
-> licensed under the MIT License. The original copyright notice and license are preserved in [LICENSE.md](LICENSE.md).
-> `lspocket` is an independently maintained package — not affiliated with the official PocketBase project.
+<p align="center">
+  <strong>Official JavaScript & TypeScript SDK for LS Pocket backend.</strong><br>
+  Cross-platform client for Browsers, Node.js, React Native, Bun, and Deno with full TypeScript support, auto-cancellation, and real-time Server-Sent Events.
+</p>
 
+<p align="center">
+  <a href="https://www.npmjs.com/package/lspocket"><img src="https://img.shields.io/npm/v/lspocket.svg?style=flat&color=CB3837" alt="npm version" /></a>
+  <a href="https://github.com/girishlade111/LS-Pocket"><img src="https://img.shields.io/badge/Companion_Backend-LS--Pocket-blue?style=flat&logo=go" alt="Companion Backend" /></a>
+  <a href="LICENSE.md"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License: MIT" /></a>
+  <a href="https://github.com/girishlade111/lspocket-js-sdk/stargazers"><img src="https://img.shields.io/github/stars/girishlade111/lspocket-js-sdk?style=social" alt="GitHub Stars" /></a>
+</p>
 
+---
+
+> 🔗 **Companion Repositories:**
+> - **Backend Server:** [github.com/girishlade111/LS-Pocket](https://github.com/girishlade111/LS-Pocket) *(Go backend binary, SQLite WAL database, and Superuser Admin UI)*
+> - **JavaScript / TypeScript SDK (This Repo):** [github.com/girishlade111/lspocket-js-sdk](https://github.com/girishlade111/lspocket-js-sdk)
+
+> ℹ️ **Attribution:** This package is a fork and rebrand of [pocketbase/js-sdk](https://github.com/pocketbase/js-sdk) by Gani Georgiev, licensed under the MIT License. The original copyright notice and license are preserved in [LICENSE.md](LICENSE.md). `lspocket` is maintained as the official client SDK for the [LS-Pocket](https://github.com/girishlade111/LS-Pocket) ecosystem.
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Companion Backend Server](#companion-backend-server)
+- [Architecture](#architecture)
 - [Installation](#installation)
-- [Usage](#usage)
-- [Caveats](#caveats)
-    - [Binding filter parameters](#binding-filter-parameters)
-    - [File upload](#file-upload)
-    - [Error handling](#error-handling)
-    - [Auth store](#auth-store)
-        - [LocalAuthStore (default)](#localauthstore-default)
-        - [AsyncAuthStore (_usually used with React Native_)](#asyncauthstore)
-        - [Custom auth store](#custom-auth-store)
-        - [Common auth store fields and methods](#common-auth-store-fields-and-methods)
-    - [Auto cancellation](#auto-cancellation)
-    - [Specify TypeScript definitions](#specify-typescript-definitions)
-    - [Custom request options](#custom-request-options)
-    - [Send hooks](#send-hooks)
-    - [SSR integration](#ssr-integration)
-    - [Security](#security)
-- [Definitions](#definitions)
-- [Development](#development)
+  - [Node.js / Bundlers (npm, pnpm, yarn, bun)](#nodejs--bundlers)
+  - [Browser (Direct `<script>` Tag)](#browser-direct-script-tag)
+  - [React Native](#react-native)
+- [Quick Start](#quick-start)
+- [Core Features & Caveats](#core-features--caveats)
+  - [Binding Filter Parameters](#binding-filter-parameters)
+  - [File Uploads](#file-uploads)
+  - [Error Handling](#error-handling)
+  - [Auth Stores](#auth-stores)
+    - [LocalAuthStore (Default)](#localauthstore-default)
+    - [AsyncAuthStore (React Native)](#asyncauthstore-react-native)
+    - [Custom Auth Stores](#custom-auth-stores)
+    - [Common Auth Store Methods](#common-auth-store-methods)
+  - [Auto Cancellation](#auto-cancellation)
+  - [TypeScript Definitions & Generics](#typescript-definitions--generics)
+  - [Custom Request Options](#custom-request-options)
+  - [Send Hooks (Interceptors)](#send-hooks-interceptors)
+  - [SSR Integration (SvelteKit, Astro, Next.js, Nuxt)](#ssr-integration)
+  - [Security Best Practices](#security-best-practices)
+- [API Reference](#api-reference)
+  - [Client Initialization](#client-initialization)
+  - [RecordService (CRUD, Realtime & Auth)](#recordservice)
+  - [BatchService](#batchservice)
+  - [FileService](#fileservice)
+  - [CollectionService](#collectionservice)
+  - [LogService](#logservice)
+  - [SettingsService](#settingsservice)
+  - [RealtimeService](#realtimeservice)
+  - [BackupService](#backupservice)
+  - [CronService](#cronservice)
+  - [HealthService](#healthservice)
+  - [SQLService](#sqlservice)
+- [Development & Building](#development--building)
+- [License](#license)
 
+---
+
+## Overview
+
+The **LS Pocket JavaScript SDK** (`lspocket`) provides an intuitive, promise-based API for interacting with the [LS-Pocket Backend Server](https://github.com/girishlade111/LS-Pocket).
+
+### Key Highlights
+- 🚀 **Universal Compatibility**: Works seamlessly across modern browsers, Node.js (>= 18), Bun, Deno, and React Native.
+- ⚡ **Realtime Subscriptions**: Built-in Server-Sent Events (SSE) client for instant live-data feeds without manual reconnection logic.
+- 🛡️ **Type Safety**: First-class TypeScript type definitions and generic model interfaces.
+- 🛑 **Request Deduplication**: Automatic cancellation of redundant inflight requests to optimize bandwidth and prevent race conditions.
+- 🔒 **Comprehensive Auth**: Supports Password, OAuth2 popup/redirect, OTP, and MFA out of the box with multi-tab storage synchronization.
+
+---
+
+## Companion Backend Server
+
+This SDK connects directly to **LS Pocket**, an open-source real-time backend engine written in Go.
+
+- **Repository**: [https://github.com/girishlade111/LS-Pocket](https://github.com/girishlade111/LS-Pocket)
+- **Default Local Server URL**: `http://127.0.0.1:8090`
+- **Default Admin UI**: `http://127.0.0.1:8090/_/`
+
+Before running your frontend or server-side application, start your LS Pocket server:
+
+```bash
+# In the LS-Pocket repository root:
+go run ./examples/base/main.go serve
+# or run the pre-built binary
+./lspocket.exe serve
+```
+
+---
+
+## Architecture
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Client App (Browser / Mobile / SSR)
+    participant SDK as lspocket JS SDK
+    participant Server as LS-Pocket Backend (Go)
+    participant DB as SQLite (WAL)
+
+    User->>SDK: new LSPocket('http://127.0.0.1:8090')
+    User->>SDK: pb.collection('users').authWithPassword(email, pass)
+    SDK->>Server: POST /api/collections/users/auth-with-password
+    Server->>DB: Verify credentials & Argon2 hash
+    Server-->>SDK: JWT Token + User Record
+    SDK-->>User: Auth response (Saved in pb.authStore)
+
+    User->>SDK: pb.collection('posts').subscribe('*', callback)
+    SDK->>Server: GET /api/realtime (SSE Stream)
+    Server-->>SDK: 200 SSE Stream Connected (PB_CONNECT)
+
+    Note over User,Server: Live Database Event Occurs
+    Server->>DB: Insert record into 'posts'
+    Server-->>SDK: SSE Event: { action: 'create', record: { ... } }
+    SDK->>>User: Invokes registered subscription callback
+```
+
+---
 
 ## Installation
 
-### Browser (manually via script tag)
+### Node.js / Bundlers
 
-```html
-<script src="/path/to/dist/lspocket.umd.js"></script>
-<script type="text/javascript">
-    const pb = new LSPocket("https://example.com")
-    ...
-</script>
-```
+Install `lspocket` using your package manager of choice:
 
-_OR if you are using ES modules:_
-```html
-<script type="module">
-    import LSPocket from '/path/to/dist/lspocket.es.mjs'
-
-    const pb = new LSPocket("https://example.com")
-    ...
-</script>
-```
-
-### Node.js (via npm)
-
-```sh
+```bash
+# npm
 npm install lspocket --save
+
+# pnpm
+pnpm add lspocket
+
+# yarn
+yarn add lspocket
+
+# bun
+bun add lspocket
 ```
 
-```js
-// Using ES modules (default)
-import LSPocket from 'lspocket'
+Importing into your code:
 
-// OR if you are using CommonJS modules
-const LSPocket = require('lspocket/cjs')
+```javascript
+// Using ES Modules (Recommended)
+import LSPocket from 'lspocket';
+
+// OR using CommonJS
+const LSPocket = require('lspocket/cjs');
 ```
 
-> 🔧 For **Node < 17** you'll need to load a `fetch()` polyfill.
-> I recommend [lquixada/cross-fetch](https://github.com/lquixada/cross-fetch):
-> ```js
-> // npm install cross-fetch --save
+> 💡 **Node < 17 Polyfills:**
+> If you are running on Node.js versions prior to v17, make sure to supply a `fetch` polyfill such as [`cross-fetch`](https://github.com/lquixada/cross-fetch):
+> ```javascript
 > import 'cross-fetch/polyfill';
 > ```
----
-> 🔧 Node doesn't have native `EventSource` implementation, so in order to use the realtime subscriptions you'll need to load a `EventSource` polyfill.
-> ```js
-> // for server: npm install eventsource --save
-> import { EventSource } from "eventsource";
->
-> // for React Native: npm install react-native-sse --save
-> import EventSource from "react-native-sse";
->
+> For realtime subscriptions in Node environments, provide an `EventSource` polyfill:
+> ```javascript
+> import { EventSource } from 'eventsource';
 > global.EventSource = EventSource;
 > ```
 
+### Browser (Direct `<script>` Tag)
 
-## Usage
+You can load pre-bundled distributions directly in HTML:
 
-```js
-import LSPocket from 'lspocket';
+```html
+<!-- UMD (Browser Global: window.LSPocket) -->
+<script src="/path/to/dist/lspocket.umd.js"></script>
+<script>
+  const pb = new LSPocket('http://127.0.0.1:8090');
+</script>
 
-const pb = new LSPocket('http://127.0.0.1:8090');
-
-...
-
-// authenticate as auth collection record
-const userData = await pb.collection('users').authWithPassword('test@example.com', '123456');
-
-// list and filter "example" collection records
-const result = await pb.collection('example').getList(1, 20, {
-    filter: 'status = true && created > "2022-08-01 10:00:00"'
-});
-
-// and much more...
-```
-> More detailed API docs and copy-paste examples could be found in the [API documentation for each service](https://pocketbase.io/docs/api-records/).
-
-
-## Caveats
-
-### Binding filter parameters
-
-The SDK comes with a helper `pb.filter(expr, params)` method to generate a filter string with placeholder parameters (`{:paramName}`) populated from an object.
-
-**This method is also recommended when using the SDK in Node/Deno/Bun server-side list queries and accepting untrusted user input as `filter` string arguments, because it will take care to properly escape the generated string expression, avoiding eventual string injection attacks** (_on the client-side this is not much of an issue_).
-
-```js
-const records = await pb.collection("example").getList(1, 20, {
-  // the same as: "title ~ 'te\\'st' && (totalA = 123 || totalB = 123)"
-  filter: pb.filter("title ~ {:title} && (totalA = {:num} || totalB = {:num})", { title: "te'st", num: 123 })
-})
+<!-- OR ES Module in Browser -->
+<script type="module">
+  import LSPocket from '/path/to/dist/lspocket.es.mjs';
+  const pb = new LSPocket('http://127.0.0.1:8090');
+</script>
 ```
 
-The supported placeholder parameter values are:
+### React Native
 
-- `string`
-- `number`
-- `boolean`
-- `null`
-- `undefined` (stringified as `null`)
-- `Date` object (stringified into the format expected by PocketBase)
-- everything else is converted to a string using `JSON.stringify()`
+For React Native, install the SDK alongside async storage and SSE polyfills:
 
-
-### File upload
-
-PocketBase Web API supports file upload via `multipart/form-data` requests,
-which means that to upload a file it is enough to provide either a [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) instance OR plain object with `File`/`Blob` prop values.
-
-- Using plain object as body _(this is the same as above and it will be converted to `FormData` behind the scenes)_:
-    ```js
-    const data = {
-      'title':    'lorem ipsum...',
-      'document': new File(...),
-    };
-
-    await pb.collection('example').create(data);
-    ```
-
-- Using `FormData` as body:
-    ```js
-    // the standard way to create multipart/form-data body
-    const data = new FormData();
-    data.set('title', 'lorem ipsum...')
-    data.set('document', new File(...))
-
-    await pb.collection('example').create(data);
-    ```
-
-### Error handling
-
-All services return a standard [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)-based response, so the error handling is straightforward:
-```js
-pb.collection('example').getList(1, 50).then((result) => {
-  // success...
-  console.log('Result:', result);
-}).catch((error) => {
-  // error...
-  console.log('Error:', error);
-});
-
-// OR if you are using the async/await syntax:
-try {
-  const result = await pb.collection('example').getList(1, 50);
-  console.log('Result:', result);
-} catch (error) {
-  console.log('Error:', error);
-}
+```bash
+npm install lspocket @react-native-async-storage/async-storage react-native-sse --save
 ```
 
-The response error is normalized and always returned as `ClientResponseError` object with the following public fields that you could use:
-```js
-ClientResponseError {
-    url:           string,     // requested url
-    status:        number,     // response status code
-    response:      { ... },    // the API JSON error response
-    isAbort:       boolean,    // is abort/cancellation error
-    originalError: Error|null, // the original non-normalized error
-}
-```
+Configure `AsyncAuthStore` and `EventSource`:
 
-### Auth store
-
-The SDK keeps track of the authenticated token and auth model for you via the `pb.authStore` instance.
-
-##### LocalAuthStore (default)
-
-The default [`LocalAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/LocalAuthStore.ts) uses the browser's `LocalStorage` if available, otherwise - will fallback to runtime/memory (aka. on page refresh or service restart you'll have to authenticate again).
-
-Conveniently, the default store also takes care to automatically sync the auth store state between multiple tabs.
-
-> _**NB!** Deno also supports `LocalStorage` but keep in mind that, unlike in browsers where the client is the only user, by default Deno `LocalStorage` will be shared by all clients making requests to your server!_
-
-##### AsyncAuthStore
-
-The SDK comes also with a helper [`AsyncAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/AsyncAuthStore.ts) that you can use to integrate with any 3rd party async storage implementation (_usually this is needed when working with React Native_):
-```js
+```javascript
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import EventSource from 'react-native-sse';
 import LSPocket, { AsyncAuthStore } from 'lspocket';
 
+global.EventSource = EventSource;
+
 const store = new AsyncAuthStore({
-    save:    async (serialized) => AsyncStorage.setItem('pb_auth', serialized),
-    initial: AsyncStorage.getItem('pb_auth'),
+  save: async (serialized) => AsyncStorage.setItem('pb_auth', serialized),
+  initial: AsyncStorage.getItem('pb_auth'),
 });
 
-const pb = new LSPocket('http://127.0.0.1:8090', store)
+const pb = new LSPocket('http://127.0.0.1:8090', store);
 ```
 
-##### Custom auth store
+---
 
-In some situations it could be easier to create your own custom auth store. For this you can extend [`BaseAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/BaseAuthStore.ts) and pass the new custom instance as constructor argument to the client:
+## Quick Start
 
-```js
+```javascript
+import LSPocket from 'lspocket';
+
+// 1. Initialize the client pointing to your LS Pocket backend
+const pb = new LSPocket('http://127.0.0.1:8090');
+
+// 2. Authenticate
+const authData = await pb.collection('users').authWithPassword('user@example.com', '12345678');
+console.log('Logged in token:', pb.authStore.token);
+console.log('Current user ID:', pb.authStore.record.id);
+
+// 3. Create a record
+const newPost = await pb.collection('posts').create({
+  title: 'Hello from LS Pocket SDK!',
+  content: 'Building ultra-fast realtime apps.',
+  status: 'published',
+});
+
+// 4. Fetch a paginated list
+const resultList = await pb.collection('posts').getList(1, 20, {
+  filter: 'status = "published"',
+  sort: '-created',
+});
+console.log('Total records:', resultList.totalItems);
+
+// 5. Realtime Subscription (SSE)
+await pb.collection('posts').subscribe('*', (e) => {
+  console.log('Realtime change action:', e.action); // 'create', 'update', or 'delete'
+  console.log('Changed record:', e.record);
+});
+```
+
+---
+
+## Core Features & Caveats
+
+### Binding Filter Parameters
+
+When querying collections based on user input, use `pb.filter(expr, params)` to properly escape parameters and prevent injection:
+
+```javascript
+const result = await pb.collection('posts').getList(1, 20, {
+  // Automatically escapes params and produces:
+  // "title ~ 'hello world' && (views >= 100 || status = true)"
+  filter: pb.filter('title ~ {:query} && (views >= {:minViews} || status = {:active})', {
+    query: "hello ' world",
+    minViews: 100,
+    active: true,
+  }),
+});
+```
+
+Supported placeholders: `string`, `number`, `boolean`, `Date` (formatted to SQLite UTC string), `null`, `undefined`.
+
+---
+
+### File Uploads
+
+File uploads are handled seamlessly via `multipart/form-data`. You can pass either standard web `FormData` or a plain JavaScript object with `File` or `Blob` instances:
+
+```javascript
+// Plain object:
+await pb.collection('documents').create({
+  title: 'Quarterly Report',
+  file: new File(['report-data'], 'report.pdf', { type: 'application/pdf' }),
+});
+
+// Using FormData:
+const form = new FormData();
+form.set('title', 'Quarterly Report');
+form.set('file', fileInput.files[0]);
+await pb.collection('documents').create(form);
+```
+
+---
+
+### Error Handling
+
+All failed network requests and validations throw a normalized `ClientResponseError`:
+
+```javascript
+import { ClientResponseError } from 'lspocket';
+
+try {
+  await pb.collection('users').authWithPassword('wrong@email.com', 'invalid');
+} catch (err) {
+  if (err instanceof ClientResponseError) {
+    console.log('Status code:', err.status);       // 400
+    console.log('Response JSON:', err.response);   // { code: 400, message: "...", data: {...} }
+    console.log('Was request aborted?', err.isAbort); // true if canceled by auto-cancellation
+  }
+}
+```
+
+---
+
+### Auth Stores
+
+#### LocalAuthStore (Default)
+In browser environments, the default `LocalAuthStore` persists tokens to `window.localStorage` and synchronizes state between open browser tabs automatically.
+
+#### AsyncAuthStore (React Native)
+Use `AsyncAuthStore` with async storage engines (like `@react-native-async-storage/async-storage`).
+
+#### Custom Auth Stores
+Extend `BaseAuthStore` to define custom storage backends (e.g., Redis, memory caching, encrypted stores):
+
+```javascript
 import LSPocket, { BaseAuthStore } from 'lspocket';
 
-class CustomAuthStore extends BaseAuthStore {
-    save(token, model) {
-        super.save(token, model);
-
-        // your custom business logic...
-    }
+class EncryptedAuthStore extends BaseAuthStore {
+  save(token, record) {
+    super.save(token, record);
+    // Custom storage persistence logic...
+  }
 }
 
-const pb = new LSPocket('http://127.0.0.1:8090', new CustomAuthStore());
+const pb = new LSPocket('http://127.0.0.1:8090', new EncryptedAuthStore());
 ```
 
-##### Common auth store fields and methods
+#### Common Auth Store Methods
 
-The default `pb.authStore` extends [`BaseAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/BaseAuthStore.ts) and has the following public members that you can use:
+| Property / Method | Description |
+|---|---|
+| `pb.authStore.token` | Current JWT authentication token string |
+| `pb.authStore.record` | Currently authenticated user or superuser record model |
+| `pb.authStore.isValid` | Checks if the stored token exists and has not expired |
+| `pb.authStore.isSuperuser` | Checks if the current token belongs to a superuser |
+| `pb.authStore.clear()` | Logs out the current session and resets auth state |
+| `pb.authStore.onChange(callback, fireImmediately)` | Registers a listener for authentication state transitions |
+| `pb.authStore.loadFromCookie(cookieStr)` | Loads authentication state from a raw HTTP cookie header |
+| `pb.authStore.exportToCookie(options)` | Exports authentication state as an HTTP cookie string |
 
-```js
-BaseAuthStore {
-    // base fields
-    record:       RecordModel|null // the authenticated auth record
-    token:        string  // the authenticated token
-    isValid:      boolean // checks if the store has existing and unexpired token
-    isSuperuser:  boolean // checks if the store state is for superuser
+---
 
-    // main methods
-    clear()             // "logout" the authenticated record
-    save(token, record) // update the store with the new auth data
-    onChange(callback, fireImmediately = false) // register a callback that will be called on store change
+### Auto Cancellation
 
-    // cookie parse and serialize helpers
-    loadFromCookie(cookieHeader, key = 'pb_auth')
-    exportToCookie(options = {}, key = 'pb_auth')
-}
-```
+The SDK cancels redundant inflight requests with identical endpoints to conserve resources and avoid race conditions:
 
-To _"logout"_ the authenticated record you can call `pb.authStore.clear()`.
+```javascript
+// The first two requests are automatically cancelled; only the 3rd completes:
+pb.collection('posts').getList(1, 20); // Cancelled
+pb.collection('posts').getList(2, 20); // Cancelled
+pb.collection('posts').getList(3, 20); // Executed
 
-To _"listen"_ for changes in the auth store, you can register a new listener via `pb.authStore.onChange`, eg:
-```js
-// triggered everytime on store change
-const removeListener1 = pb.authStore.onChange((token, record) => {
-    console.log('New store data 1:', token, record)
-});
+// To disable auto-cancellation for a specific query:
+pb.collection('posts').getList(1, 20, { requestKey: null });
 
-// triggered once right after registration and everytime on store change
-const removeListener2 = pb.authStore.onChange((token, record) => {
-    console.log('New store data 2:', token, record)
-}, true);
-
-// (optional) removes the attached listeners
-removeListener1();
-removeListener2();
-```
-
-
-### Auto cancellation
-
-The SDK client will auto cancel duplicated pending requests for you.
-For example, if you have the following 3 duplicated endpoint calls, only the last one will be executed, while the first 2 will be cancelled with `ClientResponseError` error:
-
-```js
-pb.collection('example').getList(1, 20) // cancelled
-pb.collection('example').getList(2, 20) // cancelled
-pb.collection('example').getList(3, 20) // executed
-```
-
-To change this behavior per request basis, you can adjust the `requestKey: null|string` special query parameter.
-Set it to `null` to unset the default request identifier and to disable auto cancellation for the specific request.
-Or set it to a unique string that will be used as request identifier and based on which pending requests will be matched (default to `HTTP_METHOD + path`, eg. "GET /api/users")
-
-If you want to globally disable the auto cancellation behavior, you could set `pb.autoCancellation(false)`.
-
-Examples:
-
-```js
-pb.collection('example').getList(1, 20);                        // cancelled
-pb.collection('example').getList(1, 20);                        // executed
-pb.collection('example').getList(1, 20, { requestKey: "test" }) // cancelled
-pb.collection('example').getList(1, 20, { requestKey: "test" }) // executed
-pb.collection('example').getList(1, 20, { requestKey: null })   // executed
-pb.collection('example').getList(1, 20, { requestKey: null })   // executed
-
-// globally disable auto cancellation
+// To disable auto-cancellation globally:
 pb.autoCancellation(false);
-
-pb.collection('example').getList(1, 20); // executed
-pb.collection('example').getList(1, 20); // executed
-pb.collection('example').getList(1, 20); // executed
 ```
 
-If you want to manually cancel pending requests, you could use `pb.cancelAllRequests()` or `pb.cancelRequest(requestKey)`.
+---
 
+### TypeScript Definitions & Generics
 
-### Specify TypeScript definitions
+You can strongly type your records using generics:
 
-You could specify custom TypeScript definitions for your Record models using generics:
-
-```ts
-interface Task {
-  // type the collection fields you want to use...
-  id:   string;
-  name: string;
-}
-
-pb.collection('tasks').getList<Task>(1, 20) // -> results in Promise<ListResult<Task>>
-pb.collection('tasks').getOne<Task>("RECORD_ID")  // -> results in Promise<Task>
-```
-
-Alternatively, if you don't want to type the generic argument every time you can define a global LSPocket type using type assertion:
-
-```ts
-interface Task {
-  id:   string;
-  name: string;
-}
-
+```typescript
 interface Post {
-  id:     string;
-  title:  string;
-  active: boolean;
+  id: string;
+  title: string;
+  content: string;
+  views: number;
+  created: string;
+  updated: string;
 }
 
-interface TypedPocketBase extends LSPocket {
-  collection(idOrName: string): RecordService // default fallback for any other collection
-  collection(idOrName: 'tasks'): RecordService<Task>
-  collection(idOrName: 'posts'): RecordService<Post>
-}
+// Single item Promise<Post>
+const post = await pb.collection('posts').getOne<Post>('RECORD_ID');
 
-...
-
-const pb = new LSPocket("http://127.0.0.1:8090") as TypedPocketBase;
-
-pb.collection('tasks').getOne("RECORD_ID") // -> results in Promise<Task>
-pb.collection('posts').getOne("RECORD_ID") // -> results in Promise<Post>
+// Paginated list Promise<ListResult<Post>>
+const posts = await pb.collection('posts').getList<Post>(1, 10);
 ```
 
+---
 
-### Custom request options
+### Custom Request Options
 
-All API services accept an optional `options` argument (usually the last one and of type [`SendOptions`](https://github.com/pocketbase/js-sdk/blob/master/src/tools/options.ts)), that can be used to provide:
+Every SDK service method accepts an optional `options` parameter (`SendOptions`):
 
-- custom headers for a single request
-- custom fetch options
-- or even your own `fetch` implementation
-
-For example:
-
-```js
-pb.collection('example').getList(1, 20, {
-    expand:          'someRel',
-    otherQueryParam: '123',
-
-    // custom headers
-    headers: {
-        'X-Custom-Header': 'example',
-    },
-
-    // custom fetch options
-    keepalive: false,
-    cache:     'no-store',
-
-    // or custom fetch implementation
-    fetch: async (url, config) => { ... },
-})
+```javascript
+await pb.collection('posts').getList(1, 20, {
+  headers: { 'X-Custom-Header': 'my-custom-value' },
+  cache: 'no-store',
+  requestKey: 'custom-key',
+  // You can even pass a custom fetch implementation:
+  fetch: async (url, config) => fetch(url, config),
+});
 ```
 
-_Note that for backward compatability and to minimize the verbosity, any "unknown" top-level field will be treated as query parameter._
+---
 
+### Send Hooks (Interceptors)
 
-### Send hooks
+Inspect or alter outgoing requests and incoming responses globally:
 
-Sometimes you may want to modify the request data globally or to customize the response.
+```javascript
+const pb = new LSPocket('http://127.0.0.1:8090');
 
-To accomplish this, the SDK provides 2 function hooks:
+// Before sending request
+pb.beforeSend = function (url, options) {
+  options.headers = Object.assign({}, options.headers, {
+    'X-App-Client': 'LS-Pocket-Web/1.0',
+  });
+  return { url, options };
+};
 
-- `beforeSend` - triggered right before sending the `fetch` request, allowing you to inspect/modify the request config.
-    ```js
-    const pb = new LSPocket('http://127.0.0.1:8090');
-
-    pb.beforeSend = function (url, options) {
-        // For list of the possible request options properties check
-        // https://developer.mozilla.org/en-US/docs/Web/API/fetch#options
-        options.headers = Object.assign({}, options.headers, {
-            'X-Custom-Header': 'example',
-        });
-
-        return { url, options };
-    };
-
-    // use the created client as usual...
-    ```
-
-- `afterSend` - triggered after successfully sending the `fetch` request, allowing you to inspect/modify the response object and its parsed data.
-    ```js
-    const pb = new LSPocket('http://127.0.0.1:8090');
-
-    pb.afterSend = function (response, data) {
-        // do something with the response state
-        console.log(response.status);
-
-        return Object.assign(data, {
-            // extend the data...
-            "additionalField": 123,
-        });
-    };
-
-    // use the created client as usual...
-    ```
-
-### SSR integration
-
-Unfortunately, **there is no "one size fits all" solution** because each framework handle SSR differently (_and even in a single framework there is more than one way of doing things_).
-
-But in general, the idea is to use a cookie based flow:
-
-1. Create a new `LSPocket` instance for each server-side request
-2. "Load/Feed" your `pb.authStore` with data from the request cookie
-3. Perform your application server-side actions
-4. Before returning the response to the client, update the cookie with the latest `pb.authStore` state
-
-All [`BaseAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/BaseAuthStore.ts) instances have 2 helper methods that
-should make working with cookies a little bit easier:
-
-```js
-// update the store with the parsed data from the cookie string
-pb.authStore.loadFromCookie('pb_auth=...');
-
-// exports the store data as cookie, with option to extend the default SameSite, Secure, HttpOnly, Path and Expires attributes
-pb.authStore.exportToCookie({ httpOnly: false }); // Output: 'pb_auth=...'
+// After receiving response
+pb.afterSend = function (response, data) {
+  console.log('HTTP Status:', response.status);
+  return data;
+};
 ```
 
-Below you could find several examples:
+---
 
-<details>
-  <summary><strong>SvelteKit</strong></summary>
+### SSR Integration
 
-One way to integrate with SvelteKit SSR could be to create the LSPocket client in a [hook handle](https://kit.svelte.dev/docs/hooks#handle)
-and pass it to the other server-side actions using the `event.locals`.
+For Server-Side Rendering (SSR) applications (Next.js, Nuxt, SvelteKit, Astro), initialize a distinct client per request and sync authentication with cookies:
 
-```js
+#### SvelteKit Example
+```javascript
 // src/hooks.server.js
 import LSPocket from 'lspocket';
 
-/** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
-    event.locals.pb = new LSPocket('http://127.0.0.1:8090');
+  event.locals.pb = new LSPocket('http://127.0.0.1:8090');
+  event.locals.pb.authStore.loadFromCookie(event.request.headers.get('cookie') || '');
 
-    // load the store data from the request cookie string
-    event.locals.pb.authStore.loadFromCookie(event.request.headers.get('cookie') || '');
-
-    try {
-        // get an up-to-date auth store state by verifying and refreshing the loaded auth model (if any)
-        event.locals.pb.authStore.isValid && await event.locals.pb.collection('users').authRefresh();
-    } catch (_) {
-        // clear the auth store on failed refresh
-        event.locals.pb.authStore.clear();
+  try {
+    if (event.locals.pb.authStore.isValid) {
+      await event.locals.pb.collection('users').authRefresh();
     }
+  } catch (_) {
+    event.locals.pb.authStore.clear();
+  }
 
-    const response = await resolve(event);
-
-    // send back the default 'pb_auth' cookie to the client with the latest store state
-    response.headers.append('set-cookie', event.locals.pb.authStore.exportToCookie());
-
-    return response;
+  const response = await resolve(event);
+  response.headers.append('set-cookie', event.locals.pb.authStore.exportToCookie({ httpOnly: false }));
+  return response;
 }
 ```
 
-And then, in some of your server-side actions, you could directly access the previously created `event.locals.pb` instance:
-
-```js
-// src/routes/login/+server.js
-/**
- * Creates a `POST /login` server-side endpoint
- *
- * @type {import('./$types').RequestHandler}
- */
-export async function POST({ request, locals }) {
-    const { email, password } = await request.json();
-
-    const { token, record } = await locals.pb.collection('users').authWithPassword(email, password);
-
-    return new Response('Success...');
-}
-```
-
-For proper `locals.pb` type detection, you can also add `LSPocket` in your your global types definition:
-
-```ts
-// src/app.d.ts
+#### Next.js (App Router / Server Actions) Example
+```javascript
 import LSPocket from 'lspocket';
+import { cookies } from 'next/headers';
 
-declare global {
-    declare namespace App {
-        interface Locals {
-            pb: LSPocket
-        }
-    }
+export async function createServerClient() {
+  const pb = new LSPocket('http://127.0.0.1:8090');
+  const cookieStore = await cookies();
+  const authCookie = cookieStore.get('pb_auth')?.value || '';
+
+  pb.authStore.loadFromCookie(authCookie);
+  return pb;
 }
 ```
-</details>
 
-<details>
-  <summary><strong>Astro</strong></summary>
-
-To integrate with Astro SSR, you could create the LSPocket client in the [Middleware](https://docs.astro.build/en/guides/middleware) and pass it to the Astro components using the `Astro.locals`.
-
-```ts 
-// src/middleware/index.ts
-import LSPocket from 'lspocket';
-
-import { defineMiddleware } from 'astro/middleware';
-
-export const onRequest = defineMiddleware(async ({ locals, request }: any, next: () => any) => {
-    locals.pb = new LSPocket('http://127.0.0.1:8090');
-
-    // load the store data from the request cookie string
-    locals.pb.authStore.loadFromCookie(request.headers.get('cookie') || '');
-
-    try {
-        // get an up-to-date auth store state by verifying and refreshing the loaded auth record (if any)
-        locals.pb.authStore.isValid && await locals.pb.collection('users').authRefresh();
-    } catch (_) {
-        // clear the auth store on failed refresh
-        locals.pb.authStore.clear();
-    }
-
-    const response = await next();
-
-    // send back the default 'pb_auth' cookie to the client with the latest store state
-    response.headers.append('set-cookie', locals.pb.authStore.exportToCookie());
-
-    return response;
-});
-```
-
-And then, in your Astro file's component script, you could directly access the previously created `locals.pb` instance:
-
-```ts
-// src/pages/index.astro
 ---
-const locals = Astro.locals;
 
-const userAuth = async () => {
-    const { token, record } = await locals.pb.collection('users').authWithPassword('test@example.com', '123456');
+### Security Best Practices
 
-    return new Response('Success...');
-};
+1. **Content Security Policy (CSP)**: Configure a robust CSP header or meta tag to prevent XSS attacks targeting stored tokens.
+2. **Untrusted Filters**: Always use `pb.filter()` to construct filter queries containing untrusted user inputs.
+3. **Server-Side Superuser Credentials**: Never expose superuser tokens in client-side code or public browser bundles.
+
 ---
-```
 
-Although middleware functionality is available in both `SSG` and `SSR` projects, you would likely want to handle any sensitive data on the server side. Update your `output` configuration to `'server'`:
+## API Reference
 
-```mjs
-// astro.config.mjs
-import { defineConfig } from 'astro/config';
+### Client Initialization
 
-export default defineConfig({
-    output: 'server'
-});
-```
-</details>
-
-<details>
-  <summary><strong>Nuxt 3</strong></summary>
-
-One way to integrate with Nuxt 3 SSR could be to create the LSPocket client in a [nuxt plugin](https://v3.nuxtjs.org/guide/directory-structure/plugins)
-and provide it as a helper to the `nuxtApp` instance:
-
-```js
-// plugins/lspocket.js
-import LSPocket from 'lspocket';
-
-export default defineNuxtPlugin(async () => {
-  const pb = new LSPocket('http://127.0.0.1:8090');
-
-  const cookie = useCookie('pb_auth', {
-    path:     '/',
-    secure:   true,
-    sameSite: 'strict',
-    httpOnly: false, // change to "true" if you want only server-side access
-    maxAge:   604800,
-  })
-
-  // load the store data from the cookie value
-  pb.authStore.save(cookie.value?.token, cookie.value?.record);
-
-  // send back the default 'pb_auth' cookie to the client with the latest store state
-  pb.authStore.onChange(() => {
-    cookie.value = {
-      token: pb.authStore.token,
-      record: pb.authStore.record,
-    };
-  });
-
-  try {
-      // get an up-to-date auth store state by verifying and refreshing the loaded auth model (if any)
-      pb.authStore.isValid && await pb.collection('users').authRefresh();
-  } catch (_) {
-      // clear the auth store on failed refresh
-      pb.authStore.clear();
-  }
-
-  return {
-    provide: { pb }
-  }
-});
-```
-
-And then in your component you could access it like this:
-
-```html
-<template>
-  <div>
-    Show: {{ data }}
-  </div>
-</template>
-
-<script setup>
-  const { data } = await useAsyncData(async (nuxtApp) => {
-    // fetch and return all "example" records...
-    const records = await nuxtApp.$pb.collection('example').getFullList();
-
-    return structuredClone(records);
-  })
-</script>
-```
-</details>
-
-<details>
-  <summary><strong>Nuxt 2</strong></summary>
-
-One way to integrate with Nuxt 2 SSR could be to create the LSPocket client in a [nuxt plugin](https://nuxtjs.org/docs/directory-structure/plugins#plugins-directory) and provide it as a helper to the `$root` context:
-
-```js
-// plugins/lspocket.js
-import LSPocket from  'lspocket';
-
-export default async (ctx, inject) => {
-  const pb = new LSPocket('http://127.0.0.1:8090');
-
-  // load the store data from the request cookie string
-  pb.authStore.loadFromCookie(ctx.req?.headers?.cookie || '');
-
-  // send back the default 'pb_auth' cookie to the client with the latest store state
-  pb.authStore.onChange(() => {
-    ctx.res?.setHeader('set-cookie', pb.authStore.exportToCookie());
-  });
-
-  try {
-      // get an up-to-date auth store state by verifying and refreshing the loaded auth record (if any)
-      pb.authStore.isValid && await pb.collection('users').authRefresh();
-  } catch (_) {
-      // clear the auth store on failed refresh
-      pb.authStore.clear();
-  }
-
-  inject('lspocket', pb);
-};
-```
-
-And then in your component you could access it like this:
-
-```html
-<template>
-  <div>
-    Show: {{ items }}
-  </div>
-</template>
-
-<script>
-  export default {
-    async asyncData({ $lspocket }) {
-      // fetch and return all "example" records...
-      const items = await $lspocket.collection('example').getFullList();
-
-      return { items }
-    }
-  }
-</script>
-```
-</details>
-
-<details>
-  <summary><strong>Next.js</strong></summary>
-
-Next.js doesn't seem to have a central place where you can read/modify the server request and response.
-[There is support for middlewares](https://nextjs.org/docs/advanced-features/middleware),
-but they are very limited and, at the time of writing, you can't pass data from a middleware to the `getServerSideProps` functions (https://github.com/vercel/next.js/discussions/31792).
-
-One way to integrate with Next.js SSR could be to create a custom `LSPocket` instance in each of your `getServerSideProps`:
-
-```jsx
-import LSPocket from 'lspocket';
-
-// you can place this helper in a separate file so that it can be reused
-async function initLSPocket(req, res) {
-  const pb = new LSPocket('http://127.0.0.1:8090');
-
-  // load the store data from the request cookie string
-  pb.authStore.loadFromCookie(req?.headers?.cookie || '');
-
-  // send back the default 'pb_auth' cookie to the client with the latest store state
-  pb.authStore.onChange(() => {
-    res?.setHeader('set-cookie', pb.authStore.exportToCookie());
-  });
-
-  try {
-      // get an up-to-date auth store state by verifying and refreshing the loaded auth record (if any)
-      pb.authStore.isValid && await pb.collection('users').authRefresh();
-  } catch (_) {
-      // clear the auth store on failed refresh
-      pb.authStore.clear();
-  }
-
-  return pb
-}
-
-export async function getServerSideProps({ req, res }) {
-  const pb = await initLSPocket(req, res)
-
-  // fetch example records...
-  const result = await pb.collection('example').getList(1, 30);
-
-  return {
-    props: {
-      // ...
-    },
-  }
-}
-
-export default function Home() {
-  return (
-    <div>Hello world!</div>
-  )
-}
-```
-</details>
-
-### Security
-
-The most common frontend related vulnerability is XSS (and CSRF when dealing with cookies).
-Fortunately, modern browsers can detect and mitigate most of this type of attacks if [Content Security Policy (CSP)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) is provided.
-
-**To prevent a malicious user or 3rd party script to steal your lspocket auth token, it is recommended to configure a basic CSP for your application (either as `meta` tag or HTTP header).**
-
-This is out of the scope of the SDK, but you could find more resources about CSP at:
-
-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
-- https://content-security-policy.com
-
-
-**Depending on how and where you use the JS SDK, it is also recommended to use the helper `pb.filter(expr, params)` when constructing filter strings with untrusted user input to avoid eventual string injection attacks (see [Binding filter parameters](#binding-filter-parameters)).**
-
-
-## Definitions
-
-### Creating new client instance
-
-```js
+```javascript
 const pb = new LSPocket(baseURL = '/', authStore = LocalAuthStore);
 ```
 
-### Instance methods
+| Method | Description |
+|---|---|
+| `pb.send(path, sendOptions)` | Dispatches a raw HTTP request |
+| `pb.autoCancellation(enable)` | Globally toggles request auto-cancellation |
+| `pb.cancelAllRequests()` | Cancels all pending in-flight requests |
+| `pb.cancelRequest(key)` | Cancels a specific request by requestKey |
+| `pb.buildURL(path)` | Returns a complete absolute API URL |
 
-> Each instance method returns the `LSPocket` instance allowing chaining.
+---
 
-| Method                            | Description                                                                   |
-|:----------------------------------|:------------------------------------------------------------------------------|
-| `pb.send(path, sendOptions = {})` | Sends an api http request.                                                    |
-| `pb.autoCancellation(enable)`     | Globally enable or disable auto cancellation for pending duplicated requests. |
-| `pb.cancelAllRequests()`          | Cancels all pending requests.                                                 |
-| `pb.cancelRequest(cancelKey)`     | Cancels single request by its cancellation token key.                         |
-| `pb.buildURL(path)`               | Builds a full client url by safely concatenating the provided path.           |
+### RecordService
 
+Access via `pb.collection('collectionName')`:
 
-### Services
+#### CRUD Methods
+```javascript
+// Paginated records list
+🔓 pb.collection('posts').getList(page = 1, perPage = 30, options = {});
 
-> Each service call returns a `Promise` object with the API response.
+// Full list fetched in batches
+🔓 pb.collection('posts').getFullList(options = {});
 
-##### RecordService
+// Retrieve first matching record
+🔓 pb.collection('posts').getFirstListItem(filter, options = {});
 
-###### _Crud handlers_
+// Retrieve a single record by ID
+🔓 pb.collection('posts').getOne(recordId, options = {});
 
-```js
-// Returns a paginated records list.
-🔓 pb.collection(collectionIdOrName).getList(page = 1, perPage = 30, options = {});
+// Create a new record
+🔓 pb.collection('posts').create(bodyParams, options = {});
 
-// Returns a list with all records batch fetched at once
-// (by default 1000 items per request; to change it set the `batch` param).
-🔓 pb.collection(collectionIdOrName).getFullList(options = {});
+// Update an existing record
+🔓 pb.collection('posts').update(recordId, bodyParams, options = {});
 
-// Returns the first found record matching the specified filter.
-🔓 pb.collection(collectionIdOrName).getFirstListItem(filter, options = {});
-
-// Returns a single record by its id.
-🔓 pb.collection(collectionIdOrName).getOne(recordId, options = {});
-
-// Creates (aka. register) a new record.
-🔓 pb.collection(collectionIdOrName).create(bodyParams = {}, options = {});
-
-// Updates an existing record by its id.
-🔓 pb.collection(collectionIdOrName).update(recordId, bodyParams = {}, options = {});
-
-// Deletes a single record by its id.
-🔓 pb.collection(collectionIdOrName).delete(recordId, options = {});
-
+// Delete a record
+🔓 pb.collection('posts').delete(recordId, options = {});
 ```
 
-###### _Realtime handlers_
+#### Realtime Subscription Methods
+```javascript
+// Subscribe to changes on '*' or a specific record ID
+🔓 pb.collection('posts').subscribe(topic, callback, options = {});
 
-```js
-// Subscribe to realtime changes to the specified topic ("*" or recordId).
-//
-// It is safe to subscribe multiple times to the same topic.
-//
-// You can use the returned UnsubscribeFunc to remove a single registered subscription.
-// If you want to remove all subscriptions related to the topic use unsubscribe(topic).
-🔓 pb.collection(collectionIdOrName).subscribe(topic, callback, options = {});
-
-// Unsubscribe from all registered subscriptions to the specified topic ("*" or recordId).
-// If topic is not set, then it will remove all registered collection subscriptions.
-🔓 pb.collection(collectionIdOrName).unsubscribe([topic]);
+// Unsubscribe from a specific topic or all topics on collection
+🔓 pb.collection('posts').unsubscribe(topic);
 ```
 
-###### _Auth handlers_
+#### Auth Methods (Auth Collections Only)
+```javascript
+// List enabled authentication methods
+🔓 pb.collection('users').listAuthMethods(options = {});
 
-> Available only for "auth" type collections.
+// Authenticate via Email/Username and Password
+🔓 pb.collection('users').authWithPassword(email, password, options = {});
 
-```js
-// Returns all available application auth methods.
-🔓 pb.collection(collectionIdOrName).listAuthMethods(options = {});
+// Authenticate via One-Time Password (OTP)
+🔓 pb.collection('users').authWithOTP(otpId, password, options = {});
 
-// Authenticates a record with their username/email and password.
-🔓 pb.collection(collectionIdOrName).authWithPassword(usernameOrEmail, password, options = {});
+// Authenticate via OAuth2 popup or redirect
+🔓 pb.collection('users').authWithOAuth2({ provider: 'github' });
 
-// Authenticates a record with an OTP.
-🔓 pb.collection(collectionIdOrName).authWithOTP(otpId, password, options = {});
+// Authenticate via OAuth2 code
+🔓 pb.collection('users').authWithOAuth2Code(provider, code, codeVerifier, redirectUrl);
 
-// Authenticates a record with OAuth2 provider without custom redirects, deeplinks or even page reload.
-🔓 pb.collection(collectionIdOrName).authWithOAuth2(authConfig);
+// Refresh current session
+🔐 pb.collection('users').authRefresh(options = {});
 
-// Authenticates a record with OAuth2 code.
-🔓 pb.collection(collectionIdOrName).authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData = {}, options = {});
+// Request password reset email
+🔓 pb.collection('users').requestPasswordReset(email, options = {});
 
-// Refreshes the current authenticated record and auth token.
-🔐 pb.collection(collectionIdOrName).authRefresh(options = {});
+// Confirm password reset
+🔓 pb.collection('users').confirmPasswordReset(token, newPass, newPassConfirm, options = {});
 
-// Sends a record OTP email request.
-🔓 pb.collection(collectionIdOrName).requestOTP(email, options = {});
+// Request email verification
+🔓 pb.collection('users').requestVerification(email, options = {});
 
-// Sends a record password reset email.
-🔓 pb.collection(collectionIdOrName).requestPasswordReset(email, options = {});
+// Confirm email verification
+🔓 pb.collection('users').confirmVerification(token, options = {});
 
-// Confirms a record password reset request.
-🔓 pb.collection(collectionIdOrName).confirmPasswordReset(resetToken, newPassword, newPasswordConfirm, options = {});
+// Request email change
+🔐 pb.collection('users').requestEmailChange(newEmail, options = {});
 
-// Sends a record verification email request.
-🔓 pb.collection(collectionIdOrName).requestVerification(email, options = {});
+// Confirm email change
+🔓 pb.collection('users').confirmEmailChange(token, password, options = {});
 
-// Confirms a record email verification request.
-🔓 pb.collection(collectionIdOrName).confirmVerification(verificationToken, options = {});
-
-// Sends a record email change request to the provider email.
-🔐 pb.collection(collectionIdOrName).requestEmailChange(newEmail, options = {});
-
-// Confirms record new email address.
-🔓 pb.collection(collectionIdOrName).confirmEmailChange(emailChangeToken, userPassword, options = {});
-
-// Lists all linked external auth providers for the specified record.
-🔐 pb.collection(collectionIdOrName).listExternalAuths(recordId, options = {});
-
-// Unlinks a single external auth provider relation from the specified record.
-🔐 pb.collection(collectionIdOrName).unlinkExternalAuth(recordId, provider, options = {});
-
-// Impersonate authenticates with the specified recordId and returns a new client with the received auth token in a memory store.
-🔐 pb.collection(collectionIdOrName).impersonate(recordId, duration, options = {});
+// Impersonate another user (Superuser only)
+🔐 pb.collection('users').impersonate(recordId, duration, options = {});
 ```
 
 ---
 
-#### BatchService
+### BatchService
 
-```js
-// create a new batch instance
+Execute multiple create/update/delete operations in a single transactional HTTP request:
+
+```javascript
 const batch = pb.createBatch();
 
-// register create/update/delete/upsert requests to the created batch
-batch.collection('example1').create({ ... });
-batch.collection('example2').update('RECORD_ID', { ... });
-batch.collection('example3').delete('RECORD_ID');
-batch.collection('example4').upsert({ ... });
+batch.collection('posts').create({ title: 'Batch Item 1' });
+batch.collection('posts').create({ title: 'Batch Item 2' });
+batch.collection('posts').delete('RECORD_ID_TO_DELETE');
 
-// send the batch request
-const result = await batch.send()
+const results = await batch.send();
 ```
 
 ---
 
-##### FileService
+### FileService
 
-```js
-// Builds and returns an absolute record file url for the provided filename.
-🔓 pb.files.getURL(record, filename, options = {});
+```javascript
+// Generate absolute public file URL with optional thumbnail dimensions (e.g., "100x100")
+🔓 pb.files.getURL(record, filename, { thumb: '100x100' });
 
-// Requests a new private file access token for the current authenticated record.
+// Acquire a private protected file token
 🔐 pb.files.getToken(options = {});
 ```
 
 ---
 
-##### CollectionService
+### CollectionService
 
-```js
-// Returns a paginated collections list.
+```javascript
+// Paginated collections
 🔐 pb.collections.getList(page = 1, perPage = 30, options = {});
 
-// Returns a list with all collections batch fetched at once
-// (by default 200 items per request; to change it set the `batch` query param).
-🔐 pb.collections.getFullList(options = {});
-
-// Returns the first found collection matching the specified filter.
-🔐 pb.collections.getFirstListItem(filter, options = {});
-
-// Returns a single collection by its id or name.
+// Get one collection by name or ID
 🔐 pb.collections.getOne(idOrName, options = {});
 
-// Creates (aka. register) a new collection.
-🔐 pb.collections.create(bodyParams = {}, options = {});
+// Create new collection schema
+🔐 pb.collections.create(bodyParams, options = {});
 
-// Updates an existing collection by its id or name.
-🔐 pb.collections.update(idOrName, bodyParams = {}, options = {});
+// Update existing collection schema
+🔐 pb.collections.update(idOrName, bodyParams, options = {});
 
-// Deletes a single collection by its id or name.
+// Delete collection
 🔐 pb.collections.delete(idOrName, options = {});
 
-// Deletes all records associated with the specified collection.
+// Truncate (delete all records inside collection)
 🔐 pb.collections.truncate(idOrName, options = {});
 
-// Imports the provided collections.
+// Import schema collection definitions
 🔐 pb.collections.import(collections, deleteMissing = false, options = {});
-
-// Returns type indexed map with scaffolded collection models populated with their default field values.
-🔐 pb.collections.getScaffolds(options = {});
-
-// Returns a list with all configurable OAuth2 providers.
-🔐 pb.collections.getAllOAuth2Providers(options = {});
-
-// Tests the specified view query and returns a sample of the resulting records.
-🔐 pb.collections.dryRunViewQuery(query, options = {});
 ```
 
 ---
 
-##### LogService
+### LogService
 
-```js
-// Returns a paginated logs list.
+```javascript
+// List request logs
 🔐 pb.logs.getList(page = 1, perPage = 30, options = {});
 
-// Returns a single log by its id.
+// Get single log entry
 🔐 pb.logs.getOne(id, options = {});
 
-// Returns logs statistics.
+// Request log statistics
 🔐 pb.logs.getStats(options = {});
-
-// Delete all logs.
-🔐 pb.logs.truncate(options = {});
 ```
 
 ---
 
-##### SettingsService
+### SettingsService
 
-```js
-// Returns a map with all available app settings.
+```javascript
+// Fetch all application settings
 🔐 pb.settings.getAll(options = {});
 
-// Bulk updates app settings.
-🔐 pb.settings.update(bodyParams = {}, options = {});
+// Update application settings
+🔐 pb.settings.update(bodyParams, options = {});
 
-// Performs a S3 storage connection test.
+// Test S3 storage connection
 🔐 pb.settings.testS3(filesystem = "storage", options = {});
 
-// Sends a test email (verification, password-reset, email-change).
+// Send test email
 🔐 pb.settings.testEmail(collectionIdOrName, toEmail, template, options = {});
-
-// Generates a new Apple OAuth2 client secret.
-🔐 pb.settings.generateAppleClientSecret(clientId, teamId, keyId, privateKey, duration, options = {});
 ```
 
 ---
 
-##### RealtimeService
+### RealtimeService
 
-> This service is usually used with custom realtime actions.
-> For records realtime subscriptions you can use the subscribe/unsubscribe
-> methods available in the `pb.collection()` RecordService.
-
-```js
-// Initialize the realtime connection (if not already) and register the subscription listener.
-//
-// You can subscribe to the `PB_CONNECT` event if you want to listen to the realtime connection connect/reconnect events.
+```javascript
+// Connect and subscribe to custom realtime topic
 🔓 pb.realtime.subscribe(topic, callback, options = {});
 
-// Unsubscribe from all subscription listeners with the specified topic.
-🔓 pb.realtime.unsubscribe(topic?);
+// Unsubscribe from topic
+🔓 pb.realtime.unsubscribe(topic);
 
-// Unsubscribe from all subscription listeners starting with the specified topic prefix.
-🔓 pb.realtime.unsubscribeByPrefix(topicPrefix);
-
-// Unsubscribe from all subscriptions matching the specified topic and listener function.
-🔓 pb.realtime.unsubscribeByTopicAndListener(topic, callback);
-
-// Getter that checks whether the realtime connection has been established.
-pb.realtime.isConnected
-
-// An optional hook that is invoked when the realtime client disconnects
-// either when unsubscribing from all subscriptions or when the connection
-// was interrupted or closed by the server.
-//
-// Note that the realtime client autoreconnect on its own and this hook is
-// useful only for the cases where you want to apply a special behavior on
-// server error or after closing the realtime connection.
-pb.realtime.onDisconnect = function(activeSubscriptions)
+// Connection status
+console.log('Realtime active:', pb.realtime.isConnected);
 ```
 
 ---
 
-##### BackupService
+### BackupService
 
-```js
-// Returns list with all available backup files.
+```javascript
+// List available database backups
 🔐 pb.backups.getFullList(options = {});
 
-// Initializes a new backup.
+// Create a new backup snapshot
 🔐 pb.backups.create(basename = "", options = {});
 
-// Upload an existing app data backup.
-🔐 pb.backups.upload({ file: File/Blob }, options = {});
+// Upload external backup archive
+🔐 pb.backups.upload({ file: fileObject }, options = {});
 
-// Deletes a single backup by its name.
-🔐 pb.backups.delete(key, options = {});
-
-// Initializes an app data restore from an existing backup.
+// Restore from a backup archive
 🔐 pb.backups.restore(key, options = {});
 
-// Builds a download url for a single existing backup using a
-// superuser file token and the backup file key.
-🔐 pb.backups.getDownloadURL(token, key);
+// Delete a backup archive
+🔐 pb.backups.delete(key, options = {});
 ```
 
-##### CronService
+---
 
-```js
-// Returns list with all available cron jobs.
+### CronService
+
+```javascript
+// List all scheduled cron tasks
 🔐 pb.crons.getFullList(options = {});
 
-// Runs the specified cron job.
+// Manually trigger a cron job
 🔐 pb.crons.run(jobId, options = {});
 ```
 
-##### SQLService
+---
 
-```js
-// Runs the specified raw SQL query.
+### HealthService
+
+```javascript
+// Check server health status
+🔓 pb.health.check(options = {});
+```
+
+---
+
+### SQLService
+
+```javascript
+// Execute raw SQL query (Superuser only)
 🔐 pb.sql.run(query, options = {});
 ```
 
 ---
 
-##### HealthService
+## Development & Building
 
-```js
-// Checks the health status of the api.
-🔓 pb.health.check(options = {});
-```
+To run tests or build the SDK distribution packages from source:
 
+```bash
+# Clone the repository
+git clone https://github.com/girishlade111/lspocket-js-sdk.git
+cd lspocket-js-sdk
 
-## Development
-```sh
-# run unit tests
+# Install dependencies
+npm install
+
+# Run unit test suite
 npm test
 
-# run prettier
+# Format code with Prettier
 npm run format
 
-# build and minify for production
+# Compile production bundles into dist/
 npm run build
 ```
+
+The build step generates the following artifacts in `dist/`:
+- `dist/lspocket.es.mjs`: ES Module bundle
+- `dist/lspocket.cjs.js`: CommonJS bundle
+- `dist/lspocket.umd.js`: UMD bundle for browser `<script>` tags
+- `dist/lspocket.iife.js`: Immediately Invoked Function Expression bundle
+- `dist/lspocket.es.d.mts`: Complete TypeScript declaration types
+
+---
+
+## License
+
+The LS Pocket JavaScript SDK is open-source software licensed under the [MIT License](LICENSE.md).
