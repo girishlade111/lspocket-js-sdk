@@ -46,10 +46,10 @@ export class ClientResponseError extends Error {
         if (!this.message) {
             if (this.isAbort) {
                 this.message =
-                    "The request was aborted (most likely autocancelled; you can find more info in https://github.com/pocketbase/js-sdk#auto-cancellation).";
+                    "The request was aborted (most likely autocancelled; you can find more info in https://github.com/girishlade111/lspocket-js-sdk#auto-cancellation).";
             } else if (this.originalError?.cause?.message?.includes("ECONNREFUSED ::1")) {
                 this.message =
-                    "Failed to connect to the PocketBase server. Try changing the SDK URL from localhost to 127.0.0.1 (https://github.com/pocketbase/js-sdk/issues/21).";
+                    "Failed to connect to the LS Pocket server. Try changing the SDK URL from localhost to 127.0.0.1.";
             } else {
                 this.message = "Something went wrong.";
             }

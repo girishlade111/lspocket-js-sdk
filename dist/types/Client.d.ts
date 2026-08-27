@@ -138,8 +138,10 @@ export default class LSPocket {
     constructor(baseURL?: string, authStore?: BaseAuthStore | null, lang?: string);
     /**
      * @deprecated
-     * With PocketBase v0.23.0 admins are converted to a regular auth
-     * collection named "_superusers", aka. you can use directly collection("_superusers").
+     * With LS Pocket v0.23.0 admins are converted to a regular auth
+     * collection, aka. `_superusers`.
+     *
+     * Please replace `pb.admins` with `pb.collection('_superusers')`.
      */
     get admins(): RecordService;
     /**

@@ -18,12 +18,12 @@ import { registerAutoRefresh, resetAutoRefresh } from "@/tools/refresh";
 
 export interface RecordAuthResponse<T = RecordModel> {
     /**
-     * The signed PocketBase auth record.
+     * The signed LS Pocket auth record.
      */
     record: T;
 
     /**
-     * The PocketBase record auth token.
+     * The LS Pocket record auth token.
      *
      * If you are looking for the OAuth2 access and refresh tokens
      * they are available under the `meta.accessToken` and `meta.refreshToken` props.
@@ -550,7 +550,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         // fallback to legacy format
         if (args.length > 1 || typeof args?.[0] === "string") {
             console.warn(
-                "PocketBase: This form of authWithOAuth2() is deprecated and may get removed in the future. Please replace with authWithOAuth2Code() OR use the authWithOAuth2() realtime form as shown in https://pocketbase.io/docs/authentication/#oauth2-integration.",
+                "LSPocket: This form of authWithOAuth2() is deprecated and may get removed in the future. Please replace with authWithOAuth2Code() OR use the authWithOAuth2() realtime form as shown in https://pocketbase.io/docs/authentication/#oauth2-integration.",
             );
             return this.authWithOAuth2Code<T>(
                 args?.[0] || "",

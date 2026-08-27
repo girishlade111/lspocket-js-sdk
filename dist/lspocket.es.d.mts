@@ -220,8 +220,8 @@ declare class BaseAuthStore {
      * with the cookie's token and model data.
      *
      * NB! This function doesn't validate the token or its data.
-     * Usually this isn't a concern if you are interacting only with the
-     * PocketBase API because it has the proper server-side security checks in place,
+     * Note: You should prefer saving the parsed cookie via the
+     * LS Pocket API because it has the proper server-side security checks in place,
      * but if you are using the store `isValid` state for permission controls
      * in a node server (eg. SSR), then it is recommended to call `authRefresh()`
      * after loading the cookie to ensure an up-to-date token and model state.
@@ -599,11 +599,11 @@ declare abstract class CrudService<M> extends BaseService {
 
 interface RecordAuthResponse<T = RecordModel> {
     /**
-     * The signed PocketBase auth record.
+     * The signed LS Pocket auth record.
      */
     record: T;
     /**
-     * The PocketBase record auth token.
+     * The LS Pocket record auth token.
      *
      * If you are looking for the OAuth2 access and refresh tokens
      * they are available under the `meta.accessToken` and `meta.refreshToken` props.
@@ -1384,8 +1384,10 @@ declare class LSPocket {
     constructor(baseURL?: string, authStore?: BaseAuthStore | null, lang?: string);
     /**
      * @deprecated
-     * With PocketBase v0.23.0 admins are converted to a regular auth
-     * collection named "_superusers", aka. you can use directly collection("_superusers").
+     * With LS Pocket v0.23.0 admins are converted to a regular auth
+     * collection, aka. `_superusers`.
+     *
+     * Please replace `pb.admins` with `pb.collection('_superusers')`.
      */
     get admins(): RecordService;
     /**

@@ -8,7 +8,7 @@ export class LocalAuthStore extends BaseAuthStore {
     private storageFallback: { [key: string]: any } = {};
     private storageKey: string;
 
-    constructor(storageKey = "pocketbase_auth") {
+    constructor(storageKey = "lspocket_auth") {
         super();
 
         this.storageKey = storageKey;

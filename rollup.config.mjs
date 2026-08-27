@@ -32,7 +32,7 @@ export default [
         input: 'src/index.ts',
         output: [
             {
-                file:      'dist/pocketbase.es.mjs',
+                file:      'dist/lspocket.es.mjs',
                 format:    'es',
                 sourcemap: isProduction,
             },
@@ -49,7 +49,7 @@ export default [
         input: 'src/index.ts',
         output: [
             {
-                file:      'dist/pocketbase.es.js',
+                file:      'dist/lspocket.es.js',
                 format:    'es',
                 sourcemap: isProduction,
             },
@@ -64,7 +64,7 @@ export default [
         output: [
             {
                 name:      'LSPocket',
-                file:      'dist/pocketbase.umd.js',
+                file:      'dist/lspocket.umd.js',
                 format:    'umd',
                 exports:   'default',
                 sourcemap: isProduction,
@@ -80,7 +80,7 @@ export default [
         output: [
             {
                 name:      'LSPocket',
-                file:      'dist/pocketbase.cjs.js',
+                file:      'dist/lspocket.cjs.js',
                 format:    'cjs',
                 exports:   'default',
                 sourcemap: isProduction,
@@ -100,7 +100,7 @@ export default [
         output: [
             {
                 name:      'LSPocket',
-                file:      'dist/pocketbase.iife.js',
+                file:      'dist/lspocket.iife.js',
                 format:    'iife',
                 sourcemap: isProduction,
             },
@@ -114,7 +114,7 @@ export default [
         input: 'src/index.ts',
         output: [
             {
-                file:   'dist/pocketbase.es.d.mts',
+                file:   'dist/lspocket.es.d.mts',
                 format: 'es',
             },
         ],

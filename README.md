@@ -34,7 +34,7 @@ JavaScript SDK (browser and node) for interacting with the [PocketBase API](http
 ### Browser (manually via script tag)
 
 ```html
-<script src="/path/to/dist/pocketbase.umd.js"></script>
+<script src="/path/to/dist/lspocket.umd.js"></script>
 <script type="text/javascript">
     const pb = new LSPocket("https://example.com")
     ...
@@ -44,7 +44,7 @@ JavaScript SDK (browser and node) for interacting with the [PocketBase API](http
 _OR if you are using ES modules:_
 ```html
 <script type="module">
-    import LSPocket from '/path/to/dist/pocketbase.es.mjs'
+    import LSPocket from '/path/to/dist/lspocket.es.mjs'
 
     const pb = new LSPocket("https://example.com")
     ...

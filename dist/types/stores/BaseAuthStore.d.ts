@@ -56,8 +56,8 @@ export declare class BaseAuthStore {
      * with the cookie's token and model data.
      *
      * NB! This function doesn't validate the token or its data.
-     * Usually this isn't a concern if you are interacting only with the
-     * PocketBase API because it has the proper server-side security checks in place,
+     * Note: You should prefer saving the parsed cookie via the
+     * LS Pocket API because it has the proper server-side security checks in place,
      * but if you are using the store `isValid` state for permission controls
      * in a node server (eg. SSR), then it is recommended to call `authRefresh()`
      * after loading the cookie to ensure an up-to-date token and model state.

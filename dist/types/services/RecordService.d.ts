@@ -5,11 +5,11 @@ import { ListResult, RecordModel } from "@/tools/dtos";
 import { CommonOptions, RecordFullListOptions, RecordListOptions, RecordOptions, SendOptions, RecordSubscribeOptions } from "@/tools/options";
 export interface RecordAuthResponse<T = RecordModel> {
     /**
-     * The signed PocketBase auth record.
+     * The signed LS Pocket auth record.
      */
     record: T;
     /**
-     * The PocketBase record auth token.
+     * The LS Pocket record auth token.
      *
      * If you are looking for the OAuth2 access and refresh tokens
      * they are available under the `meta.accessToken` and `meta.refreshToken` props.
